@@ -6,11 +6,22 @@ public class BombIA : MonoBehaviour
 {
     private Rigidbody2D rb;
     public float speed;
+    public Vector2 currentVelocity;
 
     public float timeToLive = 10;
     public bool timeIsRunning = true;
 
+    public Animator anim;
+    public Animator timerAnim;
+    public GameObject dangerTimer;
+
+    private AudioSource source;
+    public AudioClip release;
+
     private Dragger dragger;
+    public bool isDragged;
+
+    public ParticleSystem fx_smoke;
 
     public GameManager gameManager;
 
@@ -20,6 +31,9 @@ public class BombIA : MonoBehaviour
 
         rb = GetComponent<Rigidbody2D>();
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+
+        source = GetComponent<AudioSource>();
+        //anim = GetComponentInChildren<Animator>();
     }
 
     private void Start()
@@ -30,6 +44,8 @@ public class BombIA : MonoBehaviour
     private void Update()
     {
         TimeToLive();
+        Animate();
+        currentVelocity = rb.velocity;
         //BombMovement();
     }
 
@@ -41,9 +57,15 @@ public class BombIA : MonoBehaviour
             {
                 timeToLive -= Time.deltaTime;
             }
-            else
+            if(timeToLive <= 3)
             {
-                //GameObject.Destroy(this.gameObject);
+                timerAnim.SetBool("isCountingDown", true);
+            }
+            if(timeToLive <= 0f)
+            {
+                timerAnim.SetBool("isDead", true);
+                fx_smoke.Play();
+                fx_smoke.GetComponent<Transform>().SetParent(gameManager.transform);
                 gameManager.fightStarted = true;
                 timeToLive = 0f;
                 timeIsRunning = false;
@@ -70,16 +92,42 @@ public class BombIA : MonoBehaviour
             dragger.cantBeDragAgain = true;
             collision.GetComponent<CageBehaviour>().numberOfAnimals++;
             this.gameObject.tag = "Untagged";
+            timeIsRunning = false;
+
+            source.clip = release;
+            source.Play();
+
+            dangerTimer.SetActive(false);
         }
         if (collision.CompareTag("CageRed") && this.gameObject.CompareTag("Red"))
         {
             dragger.cantBeDragAgain = true;
             collision.GetComponent<CageBehaviour>().numberOfAnimals++;
             this.gameObject.tag = "Untagged";
+            timeIsRunning = false;
+
+            source.clip = release;
+            source.Play();
+
+            dangerTimer.SetActive(false);
         }
         else if(collision.CompareTag("CageRed") && this.gameObject.CompareTag("Black") || collision.CompareTag("CageBlack") && this.gameObject.CompareTag("Red"))
         {
-            //faut check si le player a laisser tomber le chat ou le chien dans la mauvaise cage
+            gameManager.fightStarted = true;
         }
+    }
+
+    void Animate()
+    {
+        anim.SetFloat("movementX", currentVelocity.x);
+        anim.SetFloat("movementY", currentVelocity.y);
+
+        if (!dragger.cantBeDragAgain && dragger.IsMouseOverBomb() && Input.GetMouseButton(0))
+        {
+            anim.SetBool("isGrabbed", true);
+        }
+        else if(dragger.cantBeDragAgain|| !dragger.IsMouseOverBomb())
+            anim.SetBool("isGrabbed", false);
+
     }
 }

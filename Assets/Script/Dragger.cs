@@ -14,19 +14,29 @@ public class Dragger : MonoBehaviour
 
     public bool cantBeDragAgain = false;
 
+    private AudioSource source;
+    public AudioClip grab;
+
     private void Awake()
     {
+        source = GetComponent<AudioSource>();
         cam = Camera.main;
     }
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButton(0))
         {
             IsMouseOverBomb();
+        }                         
+
+        if(Input.GetMouseButtonDown(0) && IsMouseOverBomb())
+        {
+            source.clip = grab;
+            source.Play();
         }
 
-            IsMouseOverBomb();
+        IsMouseOverBomb();
 
     }
 
