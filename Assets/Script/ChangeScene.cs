@@ -13,7 +13,7 @@ public class ChangeScene : MonoBehaviour
             SceneManager.LoadScene("Main");
         }
 
-        if(SceneManager.GetActiveScene().name == "End" && Input.GetKeyDown(KeyCode.R))
+        if(SceneManager.GetActiveScene().name == "End" && Input.GetMouseButtonDown(0))
         {
             SceneManager.LoadScene("Main");
         }
